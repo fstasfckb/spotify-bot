@@ -41,6 +41,8 @@ songs = {}
 for_user = {}
 driver = None 
 number = 1
+user_id = None
+for_user_name_song = {}
 id_to_user = {}
 song_name = ""
 while True:
@@ -64,8 +66,11 @@ while True:
     def start(message):
         global songs
         global number
+        global user_id
         global song_name
         global for_user
+        global for_user_name_song
+        user_id = message.from_user.id
         if driver != None and message.text == "Как пользоваться ботом?":
             bot.send_message(message.from_user.id, "Как пользоваться ботом❓")
             bot.send_message(message.from_user.id, "Этот бот возвращает ссылку на песню в спотифай , перейдя по которой вы можете послушать ее без рекламы и без необходимости листать до нее , теряя пропуски🙂 Также вы можете создавать здесь плейлист из своих любимых песен и слушать его когда захочется😀")
@@ -74,22 +79,31 @@ while True:
         elif driver != None and  message.text == "Добавить песню":
             bot.send_message(message.from_user.id, 'Введите название песни , в течении 5 секунд вы получите ссылку на нее')
         elif driver != None and message.text == "Просмотреть весь плейлист":     
-            if number==1 :
+            if len(for_user[user_id])==0 :
                 bot.send_message(message.from_user.id , "Плейлист пустой")
             else:
-                for index in range(number-1):
-                    bot.send_message(message.from_user.id , str(index+1)+ ":" + for_user[index+1])
+                for index in range(len(for_user[user_id])):
+                    bot.send_message(message.from_user.id , str(index+1)+ ":" + for_user_name_song[user_id][index])
+                    bot.send_message(message.from_user.id ,for_user[user_id][index])
+                    print(for_user)
         elif (driver!=None and ((len(message.text)==1 or len(message.text)==2) and (int(message.text)>=1 and int(message.text)<=99))):
-            bot.send_message(message.from_user.id , songs[int(message.text)])
+            bot.send_message(message.from_user.id , for_user[user_id][int(message.text)-1])
         else:
             if driver != None :
+
                 song_name = message.text 
                 song = main_func.listen(message.text , driver)
+                if user_id not in for_user:
+                    for_user[user_id] = []
+                    for_user[user_id].append(song)
+                    for_user_name_song[user_id] = []
+                    for_user_name_song[user_id].append(song_name)
+                elif song not in for_user[user_id]:
+                    for_user[user_id].append(song)
+                    for_user_name_song[user_id].append(song_name)
                 songs[number] = song
-                for_user[number] = song_name
-                bot.send_message(message.from_user.id, str(number) + " : " + for_user[number])
-                bot.send_message(message.from_user.id , songs[number])
-                number+=1
+                bot.send_message(message.from_user.id, str(len(for_user[user_id])) + " : " + song_name)
+                bot.send_message(message.from_user.id , for_user[user_id][len(for_user[user_id])-1])
             else:
                 bot.send_message(message.from_user.id , "Подождите окончания загрузки")
     bot.polling(non_stop=True)
