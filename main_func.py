@@ -20,8 +20,8 @@ def prepering():
 
     time.sleep(1)
 
-    username = "fstaswho@icloud.com"
-    password = "defoxxxxxxx7"
+    username = ""
+    password = ""
 
     driver.find_element(By.ID , "login-username").send_keys(username)
 
